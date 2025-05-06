@@ -1,0 +1,21 @@
+/* SVG styling for icons */
+
+/* Default state */
+.icon-link img {
+    filter: invert(46%) sepia(9%) saturate(330%) hue-rotate(182deg) brightness(94%) contrast(87%);
+    transition: filter 0.3s;
+}
+
+/* Hover state */
+.icon-link:hover img {
+    filter: invert(35%) sepia(98%) saturate(1549%) hue-rotate(202deg) brightness(96%) contrast(98%);
+}
+
+/* Icon colors for different themes */
+.icon-blue {
+    filter: invert(35%) sepia(98%) saturate(1549%) hue-rotate(202deg) brightness(96%) contrast(98%);
+}
+
+.icon-gray {
+    filter: invert(46%) sepia(9%) saturate(330%) hue-rotate(182deg) brightness(94%) contrast(87%);
+} 

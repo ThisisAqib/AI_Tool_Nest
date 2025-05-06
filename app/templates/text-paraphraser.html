@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">AI Text Paraphraser</h1>
+            <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">Transform your text with AI-powered paraphrasing while maintaining its original meaning.</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <!-- Controls Section -->
+            <div class="border-b border-gray-100 bg-white px-6 py-6 sticky top-0 z-10">
+                <div class="flex flex-wrap gap-6 justify-between items-start">
+                    <!-- Style Selection -->
+                    <div class="space-y-3">
+                        <div class="flex space-x-8">
+                            <button type="button" 
+                                class="style-tab border-b-2 border-blue-500 py-2 px-1 text-sm font-medium text-gray-900" 
+                                data-style="casual"
+                                onclick="setStyle('casual')"
+                                title="Conversational and relaxed style">
+                                Casual
+                            </button>
+                            <button type="button" 
+                                class="style-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                data-style="formal"
+                                onclick="setStyle('formal')"
+                                title="Professional and academic tone">
+                                Formal
+                            </button>
+                            <button type="button" 
+                                class="style-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                data-style="simple"
+                                onclick="setStyle('simple')"
+                                title="Clear and easy-to-understand language">
+                                Simple
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500" id="style-description">Casual: A conversational and natural style suitable for everyday communication.</p>
+                    </div>
+
+                    <!-- Options -->
+                    <div class="flex flex-wrap gap-6">
+                        <!-- Intensity Level -->
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Intensity:
+                                    <span class="ml-1 group relative">
+                                        <svg class="w-4 h-4 text-gray-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span class="hidden group-hover:block absolute left-0 top-6 w-48 p-2 bg-gray-800 text-xs text-white rounded shadow-lg z-50">
+                                            Controls how different the paraphrased text will be from the original
+                                        </span>
+                                    </span>
+                                </label>
+                                <select id="intensity" name="intensity" 
+                                    class="text-sm border-0 bg-transparent focus:ring-0 text-gray-700 pr-8 py-1.5"
+                                    onchange="updateIntensity(this.value)">
+                                    <option value="low">Low</option>
+                                    <option value="medium" selected>Medium</option>
+                                    <option value="high">High</option>
+                                </select>
+                            </div>
+                            <p class="text-xs text-gray-500" id="intensity-description">Medium: Balanced changes while preserving the original meaning.</p>
+                        </div>
+
+                        <!-- Length Option -->
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <label class="text-sm font-medium text-gray-700">
+                                    Length:
+                                    <span class="ml-1 group relative">
+                                        <svg class="w-4 h-4 text-gray-400 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <span class="hidden group-hover:block absolute left-0 top-6 w-48 p-2 bg-gray-800 text-xs text-white rounded shadow-lg z-50">
+                                            Choose the desired length of the paraphrased text
+                                        </span>
+                                    </span>
+                                </label>
+                                <select id="length-option" name="length_option" 
+                                    class="text-sm border-0 bg-transparent focus:ring-0 text-gray-700 pr-8 py-1.5"
+                                    onchange="updateLength(this.value)">
+                                    <option value="same" selected>Same</option>
+                                    <option value="shorter">Shorter</option>
+                                    <option value="longer">Longer</option>
+                                </select>
+                            </div>
+                            <p class="text-xs text-gray-500" id="length-description">Same: Keep approximately the same length as the original text.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <!-- Input Section -->
+                <div class="p-6">
+                    <form id="paraphrase-form" 
+                          hx-post="{{ url_for('process_text') }}"
+                          hx-target="#result-container"
+                          hx-swap="innerHTML show:top"
+                          hx-indicator="#loading">
+                        
+                        <input type="hidden" id="style-input" name="style" value="casual">
+                        <input type="hidden" id="intensity-input" name="intensity" value="medium">
+                        <input type="hidden" id="length-option-input" name="length_option" value="same">
+                        
+                        <div class="space-y-6">
+                            <div>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label for="text-input" class="block text-sm font-medium text-gray-700">Your Text</label>
+                                    <span class="text-xs text-gray-500">Minimum 10 characters required</span>
+                                </div>
+                                <div class="relative">
+                                    <textarea
+                                        id="text-input"
+                                        name="text"
+                                        rows="12"
+                                        class="block w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:border-blue-500 focus:bg-white focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-sm"
+                                        placeholder="Enter or paste your text here..."
+                                        onkeyup="updateCharCount(this)"
+                                        required
+                                    ></textarea>
+                                    <div class="absolute bottom-3 right-3 text-xs text-gray-400" id="char-count">0 characters</div>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <div class="flex items-center justify-end space-x-4">
+                                <button type="submit" 
+                                    id="paraphrase-btn" 
+                                    class="inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-600 transition-all duration-200"
+                                    disabled>
+                                    Paraphrase Text
+                                </button>
+                                <div id="loading" class="htmx-indicator">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="animate-spin rounded-full h-5 w-5 border-[3px] border-blue-600 border-t-transparent"></div>
+                                        <span class="text-sm text-gray-600">Processing...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Output Section -->
+                <div class="p-6 bg-gray-50">
+                    <div class="space-y-4">
+                        <label class="text-base font-medium text-gray-900">Paraphrased Text</label>
+                        <div id="result-container" class="min-h-[200px]">
+                            <div class="flex items-center justify-center h-full text-sm text-gray-500">
+                                Your paraphrased text will appear here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const styleTabs = document.querySelectorAll('.style-tab');
+        const paraphraseBtn = document.getElementById('paraphrase-btn');
+        const textInput = document.getElementById('text-input');
+
+        // Style tabs handler
+        styleTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                styleTabs.forEach(t => {
+                    t.classList.remove('active', 'border-blue-500', 'text-gray-900');
+                    t.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active', 'border-blue-500', 'text-gray-900');
+                this.classList.remove('border-transparent', 'text-gray-500');
+
+                // Update style description
+                updateStyleDescription(this.dataset.style);
+            });
+        });
+
+        // Set initial active tab
+        styleTabs[0].classList.add('active');
+
+        // Input validation
+        textInput.addEventListener('input', validateInput);
+        validateInput();
+
+        // Set initial descriptions
+        updateStyleDescription('casual');
+        updateIntensityDescription('medium');
+        updateLengthDescription('same');
+    });
+
+    // Update descriptions
+    function updateStyleDescription(style) {
+        const descriptions = {
+            casual: "Casual: A conversational and natural style suitable for everyday communication.",
+            formal: "Formal: Professional and academic tone, perfect for business or educational content.",
+            simple: "Simple: Clear and straightforward language that's easy for anyone to understand."
+        };
+        document.getElementById('style-description').textContent = descriptions[style];
+    }
+
+    function updateIntensityDescription(intensity) {
+        const descriptions = {
+            low: "Low: Subtle changes that maintain most of the original wording.",
+            medium: "Medium: Balanced changes while preserving the original meaning.",
+            high: "High: Significant rewording while keeping the core message intact."
+        };
+        document.getElementById('intensity-description').textContent = descriptions[intensity];
+    }
+
+    function updateLengthDescription(length) {
+        const descriptions = {
+            same: "Same: Keep approximately the same length as the original text.",
+            shorter: "Shorter: Create a more concise version of the text.",
+            longer: "Longer: Expand the text with additional details and explanations."
+        };
+        document.getElementById('length-description').textContent = descriptions[length];
+    }
+
+    // Update hidden inputs
+    function setStyle(style) {
+        document.getElementById('style-input').value = style;
+        updateStyleDescription(style);
+    }
+
+    function updateIntensity(intensity) {
+        document.getElementById('intensity-input').value = intensity;
+        updateIntensityDescription(intensity);
+    }
+
+    function updateLength(length) {
+        document.getElementById('length-option-input').value = length;
+        updateLengthDescription(length);
+    }
+
+    // Character counter
+    function updateCharCount(textarea) {
+        const charCount = textarea.value.length;
+        document.getElementById('char-count').textContent = `${charCount} characters`;
+        validateInput();
+    }
+
+    // Validation Helper
+    function validateInput() {
+        const textInput = document.getElementById('text-input');
+        const paraphraseBtn = document.getElementById('paraphrase-btn');
+        const minLength = 10;
+        
+        paraphraseBtn.disabled = textInput.value.length < minLength;
+    }
+</script>
+
+<style>
+    .htmx-request #paraphrase-btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .htmx-request.htmx-indicator {
+        display: flex !important;
+    }
+
+    .htmx-indicator {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+    }
+</style>
+{% endblock %} 

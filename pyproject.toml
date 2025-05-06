@@ -1,0 +1,22 @@
+[project]
+name = "ai-tool-nest"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.115.12",
+    "jinja2>=3.1.6",
+    "markdown2>=2.5.3",
+    "pydantic-settings>=2.8.1",
+    "python-multipart>=0.0.20",
+    "uvicorn>=0.34.1",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "ipykernel>=6.29.5",
+    "openai>=1.75.0",
+    "pytest>=8.3.5",
+]

@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ project_name }}{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <!-- <script src="https://cdn.tailwindcss.com"></script> -->
+    <link href="{{ url_for('static', path='css/tailwind.css') }}" rel="stylesheet">
+    
+    <!-- SVG styling -->
+    <link href="{{ url_for('static', path='css/svg-styles.css') }}" rel="stylesheet">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="bg-gray-100">
+    <nav class="bg-white shadow-xl">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center py-4">
+                <!-- Logo/Brand -->
+                <div class="text-xl font-bold">
+                    <a href="{{ url_for('home') }}" class="text-blue-600 hover:shadow-xl hover:text-blue-800 flex items-center">
+                        <!-- Robot icon -->
+                        <img id="logo" src="{{ url_for('static', path='images/icons/robot.svg') }}" class="w-8 h-8 mr-2 icon-blue" alt="Robot icon">
+                        {{ project_name }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Navigation Bar - Only visible on small screens -->
+    <div class="md:hidden bg-white shadow-md overflow-x-auto sticky top-0 z-40">
+        <div class="flex items-center justify-start p-2 space-x-3">
+            <!-- Summarizer -->
+            <a href="{{ url_for('summarizer_view') }}" 
+               class="flex flex-col items-center p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 icon-link">
+                <img src="{{ url_for('static', path='images/icons/document.svg') }}" 
+                    class="w-6 h-6" alt="Document icon">
+                <span class="text-xs font-medium mt-1">AI Text Summarizer</span>
+            </a>
+            
+            <!-- Paraphraser -->
+            <a href="{{ url_for('paraphraser_view') }}" 
+               class="flex flex-col items-center p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 icon-link">
+                <img src="{{ url_for('static', path='images/icons/arrows-exchange.svg') }}"
+                     class="w-6 h-6" alt="Arrows exchange icon">
+                <span class="text-xs font-medium mt-1">AI Paraphraser</span>
+            </a>
+            
+            <!-- Image to Text -->
+            <a href="{{ url_for('image_to_text_view') }}" 
+               class="flex flex-col items-center p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 icon-link">
+                <img src="{{ url_for('static', path='images/icons/image.svg') }}"
+                     class="w-6 h-6" alt="Image icon">
+                <span class="text-xs font-medium mt-1">Image to Text</span>
+            </a>
+            
+            <!-- Divider -->
+            <div class="h-14 w-px bg-gray-200 mx-1"></div>
+            
+            <!-- Contact us -->
+            <a href="" 
+               class="flex flex-col items-center p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 icon-link">
+                <img src="{{ url_for('static', path='images/icons/envelope.svg') }}"
+                     class="w-6 h-6" alt="Envelope icon">
+                <span class="text-xs font-medium mt-1">Contact us</span>
+            </a>
+            
+            <!-- About us -->
+            <a href="" 
+               class="flex flex-col items-center p-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all duration-300 icon-link">
+                <img src="{{ url_for('static', path='images/icons/circle-info.svg') }}"
+                     class="w-6 h-6" alt="Info icon">
+                <span class="text-xs font-medium mt-1">About us</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Desktop Layout -->
+    <div class="flex">
+        <!-- Sidebar - Only visible on medium screens and up -->
+        <aside id="sidebar"
+            class="bg-white w-64 min-h-screen hidden md:block fixed top-0 left-0 md:static shadow-lg z-50">
+            <!-- AI Tools Section -->
+            <div class="p-6">
+                <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-4">AI Tools</h2>
+                <ul class="space-y-3">
+                    <!-- Summarizer -->
+                    <li>
+                        <a href="{{ url_for('summarizer_view') }}"
+                            class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 icon-link">
+                            <img src="{{ url_for('static', path='images/icons/document.svg') }}"
+                                class="w-6 h-6 mr-2" alt="Document icon">
+                            <span class="font-medium">AI Text Summarizer</span>
+                        </a>
+                    </li>
+                    <!-- Paraphraser -->
+                    <li>
+                        <a href="{{ url_for('paraphraser_view') }}"
+                            class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 icon-link">
+                            <img src="{{ url_for('static', path='images/icons/arrows-exchange.svg') }}"
+                                class="w-6 h-6 mr-2" alt="Arrows exchange icon">
+                            <span class="font-medium">AI Paraphraser</span>
+                        </a>
+                    </li>
+                    <!-- Image to Text -->
+                    <li>
+                        <a href="{{ url_for('image_to_text_view') }}"
+                            class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 icon-link">
+                            <img src="{{ url_for('static', path='images/icons/image.svg') }}"
+                                class="w-6 h-6 mr-2" alt="Image icon">
+                            <span class="font-medium">Image to Text</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Divider -->
+            <div class="px-6">
+                <hr class="border-gray-200">
+            </div>
+
+            <!-- Contact, About, etc. -->
+            <div class="p-6">
+                <h2 class="text-xs font-semibold text-gray-600 uppercase tracking-wide mb-4">More</h2>
+                <ul class="space-y-3">
+                    <li>
+                        <a href=""
+                            class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 icon-link">
+                            <img src="{{ url_for('static', path='images/icons/envelope.svg') }}"
+                                class="w-6 h-6 mr-2" alt="Envelope icon">
+                            <span class="font-medium">Contact us</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href=""
+                            class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-all duration-200 icon-link">
+                            <img src="{{ url_for('static', path='images/icons/circle-info.svg') }}"
+                                class="w-6 h-6 mr-2" alt="Info icon">
+                            <span class="font-medium">About us</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Version -->
+            <div class="px-6 py-4 mt-auto">
+                <div class="flex items-center text-gray-600 text-sm">
+                    <img src="{{ url_for('static', path='images/icons/code-branch.svg') }}"
+                        class="w-4 h-4 mr-2 icon-gray" alt="Code branch icon">
+                    <span class="font-medium">{{version}}</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main content -->
+        <div class="flex-1 p-4">
+            <div class="container mx-auto">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

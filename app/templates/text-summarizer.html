@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">AI Text Summarizer</h1>
+            <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">Transform your long text into concise, meaningful summaries using advanced AI technology.</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <!-- Controls Section -->
+            <div class="border-b border-gray-100 bg-white px-6 py-6 sticky top-0 z-10">
+                <div class="space-y-6">
+                    <!-- Mode Tabs -->
+                    <div class="border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <!-- Mode Selection -->
+                            <div class="flex space-x-8">
+                                <button type="button" 
+                                    class="mode-tab border-b-2 border-green-500 py-2 px-1 text-sm font-medium text-gray-900" 
+                                    data-mode="paragraph">
+                                    Paragraph
+                                </button>
+                                <button type="button" 
+                                    class="mode-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                    data-mode="bullet_points">
+                                    Bullet Points
+                                </button>
+                                <button type="button" 
+                                    class="mode-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                                    data-mode="custom">
+                                    Custom
+                                </button>
+                            </div>
+
+                            <!-- Extract Keywords Toggle -->
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input type="checkbox" 
+                                    id="extract-keywords" 
+                                    name="extract_keywords" 
+                                    class="sr-only peer"
+                                    checked
+                                    onchange="this.value = this.checked">
+                                <div class="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-green-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"></div>
+                                <span class="ms-3 text-sm font-medium text-gray-700">Extract Keywords</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Length Slider and Options -->
+                    <div class="grid grid-cols-12 gap-6 items-start">
+                        <!-- Max Length (Only for Paragraph mode) -->
+                        <div class="col-span-full space-y-4" id="max-length-container">
+                            <div class="flex justify-between items-center">
+                                <label class="text-sm font-medium text-gray-700">Max Summary Length</label>
+                                <span class="text-sm text-gray-500" id="length-display">150 words</span>
+                            </div>
+                            <div class="relative">
+                                <div class="flex items-center">
+                                    <span class="text-xs text-gray-500">Short</span>
+                                    <input type="range" 
+                                        id="max-length" 
+                                        name="max_length" 
+                                        min="20" 
+                                        max="1000" 
+                                        value="150"
+                                        class="mx-4 h-1 w-full appearance-none rounded-lg bg-gray-200 accent-green-500"
+                                        oninput="document.getElementById('length-display').textContent = this.value + ' words'">
+                                    <span class="text-xs text-gray-500">Long</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Custom Instructions (Full Width when Visible) -->
+                        <div class="col-span-full hidden" id="custom-instructions-container">
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center">
+                                    <label for="custom-instructions" class="text-sm font-medium text-gray-700">Custom Instructions</label>
+                                    <button type="button" id="example-toggle" class="text-sm text-green-600 hover:text-green-700 font-medium">
+                                        View Examples
+                                    </button>
+                                </div>
+                                <input type="text" 
+                                    id="custom-instructions" 
+                                    name="custom_instructions" 
+                                    class="block w-full px-4 py-2.5 rounded-xl bg-gray-50 border-transparent focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-200 transition-all duration-200 text-base"
+                                    placeholder="Enter your custom instructions for summarization">
+                                
+                                <!-- Examples Dropdown -->
+                                <div id="examples-container" class="hidden">
+                                    <div class="mt-2 p-4 bg-gray-50 rounded-xl space-y-3">
+                                        <p class="text-sm font-medium text-gray-700 mb-2">Example Instructions:</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Make it very concise and short, focusing only on the key points.">
+                                                💨 Make it very concise
+                                            </button>
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Generate a title and a brief description summarizing the main points.">
+                                                📝 Title + Description
+                                            </button>
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Explain it like I'm 5 years old, using simple language.">
+                                                🎈 Explain Like I'm 5
+                                            </button>
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Focus on the main arguments and supporting evidence.">
+                                                🎯 Main Arguments
+                                            </button>
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Create a step-by-step summary of the main points.">
+                                                📋 Step-by-Step
+                                            </button>
+                                            <button class="example-prompt text-left px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-150" data-prompt="Identify the problem and solution discussed in the text.">
+                                                💡 Problem-Solution
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <!-- Input Section -->
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <label for="input-text" class="text-base font-medium text-gray-900">Input Text</label>
+                            <button type="button" 
+                                id="paste-text" 
+                                class="inline-flex items-center space-x-2 px-3 py-1.5 text-sm font-medium rounded-lg text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                <span>Paste Text</span>
+                            </button>
+                        </div>
+                        <textarea id="input-text" name="text" 
+                            class="block w-full px-4 py-3 rounded-xl bg-gray-50 border-transparent focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-200 transition-all duration-200 min-h-[300px] md:min-h-[400px] resize-y text-base"
+                            placeholder="Enter or paste text here (minimum 100 characters) and press 'Summarize'"
+                            oninput="this.style.height = this.scrollHeight + 'px'"></textarea>
+                        
+                        <!-- Input Stats and Action -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-4 text-sm text-gray-500">
+                                <div id="word-count">0 words</div>
+                                <div class="text-gray-300">•</div>
+                                <div id="char-count">0 characters</div>
+                            </div>
+                            <button id="summarize-btn" 
+                                class="inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 transition-all duration-200"
+                                hx-post="{{ url_for('summarize_text') }}"
+                                hx-trigger="click"
+                                hx-vals='js:{
+                                    "text": document.getElementById("input-text").value,
+                                    "mode": document.querySelector(".mode-tab.active").dataset.mode,
+                                    "max_length": document.getElementById("max-length").value,
+                                    "custom_instructions": document.getElementById("custom-instructions").value,
+                                    "extract_keywords": document.getElementById("extract-keywords").checked
+                                }'
+                                hx-target="#summary-container"
+                                hx-swap="innerHTML show:top"
+                                hx-indicator="#loading"
+                                disabled>
+                                Summarize
+                            </button>
+                            <div id="loading" class="htmx-indicator">
+                                <div class="flex items-center space-x-3">
+                                    <div class="animate-spin rounded-full h-5 w-5 border-[3px] border-green-600 border-t-transparent"></div>
+                                    <span class="text-sm text-gray-600">Processing...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Output Section -->
+                <div class="p-6 bg-gray-50">
+                    <div class="space-y-4">
+                        <label for="output-text" class="text-base font-medium text-gray-900">Summary</label>
+                        <div id="summary-container" class="space-y-6">
+                            <textarea id="output-text" 
+                                class="block w-full px-4 py-3 rounded-xl bg-white border-transparent focus:border-green-500 focus:ring-2 focus:ring-green-200 transition-all duration-200 min-h-[300px] md:min-h-[400px] text-base" 
+                                placeholder="Your summary will appear here..."
+                                readonly></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const customInstructionsContainer = document.getElementById('custom-instructions-container');
+        const maxLengthContainer = document.getElementById('max-length-container');
+        const inputText = document.getElementById('input-text');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const pasteBtn = document.getElementById('paste-text');
+        const exampleToggle = document.getElementById('example-toggle');
+        const examplesContainer = document.getElementById('examples-container');
+        const customInstructionsInput = document.getElementById('custom-instructions');
+        const examplePrompts = document.querySelectorAll('.example-prompt');
+
+        // Example prompts handler
+        exampleToggle.addEventListener('click', function() {
+            const isHidden = examplesContainer.classList.contains('hidden');
+            examplesContainer.classList.toggle('hidden');
+            this.textContent = isHidden ? 'Hide Examples' : 'View Examples';
+        });
+
+        // Example prompt click handler
+        examplePrompts.forEach(button => {
+            button.addEventListener('click', function() {
+                customInstructionsInput.value = this.dataset.prompt;
+                examplesContainer.classList.add('hidden');
+                exampleToggle.textContent = 'View Examples';
+                customInstructionsInput.focus();
+            });
+        });
+
+        // Mode tabs handler
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                modeTabs.forEach(t => {
+                    t.classList.remove('active', 'border-green-500', 'text-gray-900');
+                    t.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active', 'border-green-500', 'text-gray-900');
+                this.classList.remove('border-transparent', 'text-gray-500');
+
+                // Show/hide containers based on mode
+                if (this.dataset.mode === 'custom') {
+                    customInstructionsContainer.classList.remove('hidden');
+                    maxLengthContainer.classList.add('hidden');
+                    // Reset examples view
+                    examplesContainer.classList.add('hidden');
+                    exampleToggle.textContent = 'View Examples';
+                } else if (this.dataset.mode === 'paragraph') {
+                    customInstructionsContainer.classList.add('hidden');
+                    maxLengthContainer.classList.remove('hidden');
+                } else {
+                    customInstructionsContainer.classList.add('hidden');
+                    maxLengthContainer.classList.add('hidden');
+                }
+            });
+        });
+
+        // Set initial active tab and show/hide containers
+        modeTabs[0].classList.add('active');
+        maxLengthContainer.classList.remove('hidden'); // Show max length for paragraph mode (default)
+        customInstructionsContainer.classList.add('hidden');
+
+        // Function to validate input and update button state
+        function validateInput() {
+            const text = inputText.value;
+            summarizeBtn.disabled = text.length < 100;
+            updateWordCount(inputText);
+        }
+
+        // Input validation
+        inputText.addEventListener('input', validateInput);
+
+        // Paste button handler
+        pasteBtn.addEventListener('click', async () => {
+            try {
+                const text = await navigator.clipboard.readText();
+                inputText.value = text;
+                validateInput();
+            } catch (err) {
+                console.error('Failed to read clipboard:', err);
+            }
+        });
+
+        // Initial validation check
+        validateInput();
+    });
+
+    function updateWordCount(textarea) {
+        const text = textarea.value;
+        const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+        const chars = text.length;
+        
+        document.getElementById('word-count').textContent = `${words} words`;
+        document.getElementById('char-count').textContent = `${chars} characters`;
+    }
+</script>
+
+<style>
+    .htmx-request #summarize-btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .htmx-request.htmx-indicator {
+        display: flex !important;
+    }
+
+    .htmx-indicator {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+    }
+
+    /* Modern scrollbar styling */
+    textarea::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    textarea::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    textarea::-webkit-scrollbar-thumb {
+        background: #c5c5c5;
+        border-radius: 4px;
+    }
+
+    textarea::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    /* Range input styling */
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        background: #22c55e;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.1);
+    }
+
+    input[type="range"]:focus::-webkit-slider-thumb {
+        box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.2);
+    }
+</style>
+
+<!-- Template for keyword tags (will be used in the backend response) -->
+<template id="keyword-tag-template">
+    <span class="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-green-50 text-green-700 ring-1 ring-inset ring-green-700/10 transition-all duration-200 hover:bg-green-100">
+        <!-- Tag content will be inserted here -->
+    </span>
+</template>
+{% endblock %}

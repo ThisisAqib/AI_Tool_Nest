@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-b from-gray-50 to-white py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header Section -->
+        <div class="text-center mb-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mb-3">AI Image to Text</h1>
+            <p class="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">Extract text and detailed descriptions from your images using advanced AI technology.</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+            <!-- Controls Section -->
+            <div class="border-b border-gray-100 bg-white px-6 py-6 sticky top-0 z-10">
+                <div class="flex justify-between items-center">
+                    <!-- Mode Selection -->
+                    <div class="flex space-x-8">
+                        <button type="button" 
+                            class="mode-tab border-b-2 border-green-500 py-2 px-1 text-sm font-medium text-gray-900" 
+                            data-mode="description"
+                            onclick="setMode('description')">
+                            Description
+                        </button>
+                        <button type="button" 
+                            class="mode-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                            data-mode="ocr"
+                            onclick="setMode('ocr')">
+                            OCR
+                        </button>
+                        <button type="button" 
+                            class="mode-tab border-b-2 border-transparent py-2 px-1 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300" 
+                            data-mode="detailed"
+                            onclick="setMode('detailed')">
+                            Detailed
+                        </button>
+                    </div>
+
+                    <!-- Detail Level -->
+                    <div class="flex items-center space-x-3">
+                        <label class="text-sm font-medium text-gray-700">Detail Level:</label>
+                        <select id="detail-level" name="detail_level" 
+                            class="text-sm border-0 bg-transparent focus:ring-0 text-gray-700 pr-8 py-1.5"
+                            onchange="updateDetailLevel(this.value)">
+                            <option value="brief">Brief</option>
+                            <option value="standard" selected>Standard</option>
+                            <option value="comprehensive">Comprehensive</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <!-- Input Section -->
+                <div class="p-6">
+                    <form id="image-form" 
+                          hx-post="{{ url_for('process_image') }}"
+                          hx-target="#analysis-container"
+                          hx-swap="innerHTML show:top"
+                          hx-encoding="multipart/form-data"
+                          hx-indicator="#loading">
+                        
+                        <input type="hidden" id="mode-input" name="mode" value="description">
+                        <input type="hidden" id="detail-level-input" name="detail_level" value="standard">
+                        
+                        <div class="space-y-6">
+                            <!-- Image Upload Area -->
+                            <div class="relative">
+                                <div id="upload-area" 
+                                    class="relative border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:border-green-500 transition-colors cursor-pointer"
+                                    ondrop="handleDrop(event)"
+                                    ondragover="handleDragOver(event)"
+                                    ondragleave="handleDragLeave(event)">
+                                    
+                                    <!-- Hidden File Input -->
+                                    <input type="file" 
+                                        id="image-file" 
+                                        name="image_file" 
+                                        class="hidden" 
+                                        accept="image/jpeg,image/png,image/gif,image/webp"
+                                        onchange="handleFileSelect(this)">
+                                    
+                                    <!-- Upload Icon -->
+                                    <div class="mx-auto w-16 h-16 mb-4">
+                                        <svg class="w-full h-full text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6a2 2 0 100-4 2 2 0 000 4z" />
+                                        </svg>
+                                    </div>
+
+                                    <!-- Upload Text -->
+                                    <div class="space-y-2">
+                                        <p class="text-base font-medium text-gray-900">Drop your image here, or <button type="button" onclick="document.getElementById('image-file').click()" class="text-green-600 hover:text-green-700">browse</button></p>
+                                        <p class="text-sm text-gray-500">Supports JPEG, PNG, GIF, WebP (max 4MB)</p>
+                                    </div>
+
+                                    <!-- Preview Container -->
+                                    <div id="image-preview" class="hidden mt-4">
+                                        <img src="" alt="Preview" class="max-h-64 mx-auto rounded-lg shadow-sm">
+                                        <button type="button" 
+                                            onclick="removeImage()"
+                                            class="absolute top-2 right-2 p-1 rounded-full bg-gray-900/50 hover:bg-gray-900/75 text-white transition-colors">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- OR Divider -->
+                                <div class="relative my-6">
+                                    <div class="absolute inset-0 flex items-center">
+                                        <div class="w-full border-t border-gray-200"></div>
+                                    </div>
+                                    <div class="relative flex justify-center">
+                                        <span class="px-4 bg-white text-sm text-gray-500">OR</span>
+                                    </div>
+                                </div>
+
+                                <!-- URL Input -->
+                                <div class="space-y-2">
+                                    <label for="image-url" class="block text-sm font-medium text-gray-700">Image URL</label>
+                                    <div class="flex space-x-2">
+                                        <input type="url" 
+                                            id="image-url" 
+                                            name="image_url" 
+                                            class="block w-full px-4 py-2.5 rounded-xl bg-gray-50 border-transparent focus:border-green-500 focus:bg-white focus:ring-2 focus:ring-green-200 transition-all duration-200 text-sm"
+                                            placeholder="https://example.com/image.jpg"
+                                            onchange="handleUrlInput(this)">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Button -->
+                            <div class="flex items-center justify-end space-x-4">
+                                <button type="submit" 
+                                    id="analyze-btn" 
+                                    class="inline-flex items-center px-6 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-green-600 transition-all duration-200"
+                                    disabled>
+                                    Analyze Image
+                                </button>
+                                <div id="loading" class="htmx-indicator">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="animate-spin rounded-full h-5 w-5 border-[3px] border-green-600 border-t-transparent"></div>
+                                        <span class="text-sm text-gray-600">Processing...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Output Section -->
+                <div class="p-6 bg-gray-50">
+                    <div class="space-y-4">
+                        <label class="text-base font-medium text-gray-900">Analysis Results</label>
+                        <div id="analysis-container" class="min-h-[200px]">
+                            <div class="flex items-center justify-center h-full text-sm text-gray-500">
+                                Your analysis results will appear here
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modeTabs = document.querySelectorAll('.mode-tab');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        const imageFile = document.getElementById('image-file');
+        const imageUrl = document.getElementById('image-url');
+        const uploadArea = document.getElementById('upload-area');
+        const imagePreview = document.getElementById('image-preview');
+        const imageForm = document.getElementById('image-form');
+
+        // Mode tabs handler
+        modeTabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // Remove active class from all tabs
+                modeTabs.forEach(t => {
+                    t.classList.remove('active', 'border-green-500', 'text-gray-900');
+                    t.classList.add('border-transparent', 'text-gray-500');
+                });
+                
+                // Add active class to clicked tab
+                this.classList.add('active', 'border-green-500', 'text-gray-900');
+                this.classList.remove('border-transparent', 'text-gray-500');
+            });
+        });
+
+        // Set initial active tab
+        modeTabs[0].classList.add('active');
+    });
+
+    // Update hidden inputs
+    function setMode(mode) {
+        document.getElementById('mode-input').value = mode;
+    }
+
+    function updateDetailLevel(level) {
+        document.getElementById('detail-level-input').value = level;
+    }
+
+    // File Drop Handlers
+    function handleDragOver(event) {
+        event.preventDefault();
+        event.currentTarget.classList.add('border-green-500', 'bg-green-50');
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('border-green-500', 'bg-green-50');
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        event.currentTarget.classList.remove('border-green-500', 'bg-green-50');
+        
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('image-file').files = files;
+            handleFileSelect(document.getElementById('image-file'));
+        }
+    }
+
+    // File Selection Handler
+    function handleFileSelect(input) {
+        const file = input.files[0];
+        if (file) {
+            // Clear URL input
+            document.getElementById('image-url').value = '';
+            
+            // Validate file size
+            if (file.size > 4 * 1024 * 1024) {
+                alert('File size must be less than 4MB');
+                input.value = '';
+                return;
+            }
+
+            // Show preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('image-preview');
+                preview.querySelector('img').src = e.target.result;
+                preview.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+        validateInput();
+    }
+
+    // URL Input Handler
+    function handleUrlInput(input) {
+        // Clear file input
+        document.getElementById('image-file').value = '';
+        document.getElementById('image-preview').classList.add('hidden');
+        validateInput();
+    }
+
+    // Remove Image Handler
+    function removeImage() {
+        document.getElementById('image-file').value = '';
+        document.getElementById('image-preview').classList.add('hidden');
+        validateInput();
+    }
+
+    // Validation Helper
+    function validateInput() {
+        const imageFile = document.getElementById('image-file');
+        const imageUrl = document.getElementById('image-url');
+        const analyzeBtn = document.getElementById('analyze-btn');
+        
+        const hasFile = imageFile.files.length > 0;
+        const hasUrl = imageUrl.value.trim() !== '';
+        analyzeBtn.disabled = !(hasFile || hasUrl);
+    }
+</script>
+
+<style>
+    .htmx-request #analyze-btn {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    .htmx-request.htmx-indicator {
+        display: flex !important;
+    }
+
+    .htmx-indicator {
+        display: none;
+    }
+
+    @media (max-width: 768px) {
+        .sticky {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+    }
+</style>
+{% endblock %} 
