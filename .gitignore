@@ -44,9 +44,6 @@ ENV/
 node_modules/
 package-lock.json
 
-image-to-text/
-text-summarizer/
-text-paraphraser/
 old_docs/
-.cursor2/
+.cursor/
 

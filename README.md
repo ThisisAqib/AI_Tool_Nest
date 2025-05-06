@@ -52,6 +52,11 @@ This application requires the AI Tool Nest API to be running. Make sure to:
 1. Set up the [AI Tool Nest API](https://github.com/ThisisAqib/AI_Tool_Nest_API)
 2. Configure the API URL and key in your `.env` file
 
+## Documentation
+
+- **Technical Guide**: See [docs/technical.md](docs/technical.md) for detailed technical documentation, API endpoints, and development guidelines
+- **Architecture**: See [docs/architecture.md](docs/architecture.md) for system design, components, and architectural decisions
+
 ## Development
 
 - The application runs on port 8001 by default
